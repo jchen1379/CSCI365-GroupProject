@@ -40,10 +40,12 @@ def get_30360_daycount_frac(start, end):
 
 
 def get_actualactual_daycount_frac(start, end):
-    # TODO - Jianhui
-    # result = ...
-    # end TODO
-    return (result)
+    # TODO by Jianhui
+    day_in_year = 365
+    if calendar.isleap(start.year):
+        day_in_year += 1
+    day_count = (end - start).days
+    return (day_count / day_in_year)
 
 
 class BondCalculator(object):
@@ -55,12 +57,20 @@ class BondCalculator(object):
         self.pricing_date = pricing_date
 
     def calc_one_period_discount_factor(self, bond, yld):
-        # calculate the future cashflow vectors
-        # TODO: calculate the one period discount factor - Jianhui
-        # hint: need to use if else statement for different payment frequency cases
+        # TODO by Jianhui
         df = None
+        payment_frequency = bond.payment_freq
+        if payment_frequency == PaymentFrequency.ANNUAL:
+            df = 1 / (1 + yld)
+        elif payment_frequency == PaymentFrequency.SEMIANNUAL:
+            df = 1 / (1 + yld / 2)
+        elif payment_frequency == PaymentFrequency.QUARTERLY:
+            df = 1 / (1 + yld / 4)
+        elif payment_frequency == PaymentFrequency.MONTHLY:
+            df = 1 / (1 + yld / 12)
+        elif payment_frequency == PaymentFrequency.CONTINUOUS:
+            df = math.pow(math.e, -yld)
 
-        # end TODO
         return (df)
 
     def calc_clean_price(self, bond, yld):
@@ -68,12 +78,13 @@ class BondCalculator(object):
         Calculate bond price as of the pricing_date for a given yield
         bond price should be expressed in percentage eg 100 for a par bond
         """
-        result = None
-
+        # TODO by Jianhui
+        result = 0
         one_period_factor = self.calc_one_period_discount_factor(bond, yld)
-        # TODO: implement calculation here - Jianhui
-
-        # end TODO:
+        cash_flow = bond.principal * bond.coupon
+        for i in range(1, bond.term+1):
+            result += cash_flow * math.pow(one_period_factor, i)
+        result += bond.principal * math.pow(one_period_factor, 10)
 
         return (result)
 
@@ -197,8 +208,8 @@ def _example4():
 def _test():
     # basic test cases
     _example2()
-    _example3()
-    _example4()
+    # _example3()
+    # _example4()
 
 
 if __name__ == "__main__":
