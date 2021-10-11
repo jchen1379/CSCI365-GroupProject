@@ -1,16 +1,16 @@
-'''
+"""
 
 @project       : Queens College CSCI 365/765 Computational Finance
 @Instructor    : Dr. Alex Pang
 
-@Group Name    : 
+@Group Name    :
 @Student Name  : first last
 
 @Date          : Fall 2021
 
 A Bond Calculator Class
 
-'''
+"""
 
 import math
 import pandas as pd
@@ -29,20 +29,22 @@ from bond import Bond, DayCount, PaymentFrequency
 def get_actual360_daycount_frac(start, end):
     day_in_year = 360
     day_count = (end - start).days
-    return(day_count / day_in_year)
+    return (day_count / day_in_year)
+
 
 def get_30360_daycount_frac(start, end):
     day_in_year = 360
-    day_count = 360*(end.year - start.year) + 30*(end.month - start.month - 1) + \
+    day_count = 360 * (end.year - start.year) + 30 * (end.month - start.month - 1) + \
                 max(0, 30 - start.day) + min(30, end.day)
-    return(day_count / day_in_year )
-    
+    return (day_count / day_in_year)
+
 
 def get_actualactual_daycount_frac(start, end):
     # TODO - Jianhui
     # result = ...
     # end TODO
-    return(result)
+    return (result)
+
 
 class BondCalculator(object):
     '''
@@ -57,10 +59,9 @@ class BondCalculator(object):
         # TODO: calculate the one period discount factor - Jianhui
         # hint: need to use if else statement for different payment frequency cases
         df = None
-        
-        # end TODO
-        return(df)
 
+        # end TODO
+        return (df)
 
     def calc_clean_price(self, bond, yld):
         '''
@@ -68,14 +69,13 @@ class BondCalculator(object):
         bond price should be expressed in percentage eg 100 for a par bond
         '''
         result = None
-        
+
         one_period_factor = self.calc_one_period_discount_factor(bond, yld)
         # TODO: implement calculation here - Jianhui
 
-
         # end TODO:
-        
-        return(result)
+
+        return (result)
 
     def calc_accrual_interest(self, bond, settle_date):
         '''
@@ -99,17 +99,17 @@ class BondCalculator(object):
         '''
 
         # end TODO
-        return(result)
+        return (result)
 
     def calc_macaulay_duration(self, bond, yld):
         '''
         time to cashflow weighted by PV
         '''
         # TODO: implement details here - Weifeng
-        #result =( sum(wavg) / sum(PVs))
+        # result =( sum(wavg) / sum(PVs))
 
         # end TODO
-        return(result)
+        return (result)
 
     def calc_modified_duration(self, bond, yld):
         '''
@@ -119,7 +119,7 @@ class BondCalculator(object):
 
         # TODO: implement details here - Weifeng
         # end TODO:
-        return(result)
+        return (result)
 
     def calc_yield(self, bond, bond_price):
         '''
@@ -129,19 +129,19 @@ class BondCalculator(object):
         def match_price(yld):
             calculator = BondCalculator(self.pricing_date)
             px = calculator.calc_clean_price(bond, yld)
-            return(px - bond_price)
+            return (px - bond_price)
 
         # TODO: implement details here - Ching Kung
-        #yld, n_iteractions = bisection( ....)
+        # yld, n_iteractions = bisection( ....)
         # end TODO:
-        return(yld)
+        return (yld)
 
     def calc_convexity(self, bond, yld):
         # calculate convexity of a bond at a certain yield yld
 
         # TODO: implement details here - Ching Kung
         # result = sum(wavg) / sum(PVs))
-        return( result)
+        return (result)
 
 
 ##########################  some test cases ###################
@@ -152,29 +152,28 @@ def _example2():
     engine = BondCalculator(pricing_date)
 
     # Example 2
-    bond = Bond(issue_date, term=10, day_count = DayCount.DAYCOUNT_30360,
-                 payment_freq = PaymentFrequency.ANNUAL, coupon = 0.05)
+    bond = Bond(issue_date, term=10, day_count=DayCount.DAYCOUNT_30360,
+                payment_freq=PaymentFrequency.ANNUAL, coupon=0.05)
 
     yld = 0.06
     px_bond2 = engine.calc_clean_price(bond, yld)
     print("The clean price of bond 2 is: ", format(px_bond2, '.4f'))
-    assert( abs(px_bond2 - 92.640) < 0.01)
+    assert (abs(px_bond2 - 92.640) < 0.01)
 
-    
+
 def _example3():
     pricing_date = date(2021, 1, 1)
     issue_date = date(2021, 1, 1)
     engine = BondCalculator(pricing_date)
 
-    
-    bond = Bond(issue_date, term = 2, day_count =DayCount.DAYCOUNT_30360,
-                 payment_freq = PaymentFrequency.SEMIANNUAL,
-                 coupon = 0.08)
+    bond = Bond(issue_date, term=2, day_count=DayCount.DAYCOUNT_30360,
+                payment_freq=PaymentFrequency.SEMIANNUAL,
+                coupon=0.08)
 
     yld = 0.06
     px_bond3 = engine.calc_clean_price(bond, yld)
     print("The clean price of bond 3 is: ", format(px_bond3, '.4f'))
-    assert( abs(px_bond3 - 103.717) < 0.01)
+    assert (abs(px_bond3 - 103.717) < 0.01)
 
 
 def _example4():
@@ -185,23 +184,22 @@ def _example4():
 
     # Example 4 5Y bond with semi-annual 5% coupon priced at 103.72 should have a yield of 4.168%
     price = 103.72
-    bond = Bond(issue_date, term=5, day_count = DayCount.DAYCOUNT_30360,
-                payment_freq = PaymentFrequency.SEMIANNUAL, coupon = 0.05, principal = 100)
-    
+    bond = Bond(issue_date, term=5, day_count=DayCount.DAYCOUNT_30360,
+                payment_freq=PaymentFrequency.SEMIANNUAL, coupon=0.05, principal=100)
 
     yld = engine.calc_yield(bond, price)
 
     print("The yield of bond 4 is: ", yld)
 
-    assert( abs(yld - 0.04168) < 0.01)
-    
+    assert (abs(yld - 0.04168) < 0.01)
+
+
 def _test():
     # basic test cases
     _example2()
     _example3()
     _example4()
 
-    
 
 if __name__ == "__main__":
     _test()
