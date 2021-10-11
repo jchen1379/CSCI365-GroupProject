@@ -86,7 +86,7 @@ class BondCalculator(object):
         prev_pay_date = bond.get_previous_payment_date(settle_date)
         end_date = settle_date
 
-        # TODO: - Weifeng
+        # TODO: - Ching Kung
         """
         if (bond.day_count == DayCount.DAYCOUNT_30360):
             frac = get_30360_daycount_frac(prev_pay_date, settle_date)
@@ -105,7 +105,7 @@ class BondCalculator(object):
         """
         time to cashflow weighted by PV
         """
-        # TODO: implement details here - Weifeng
+        # TODO: implement details here - Ching Kung
         # result =( sum(wavg) / sum(PVs))
 
         # end TODO
@@ -117,7 +117,7 @@ class BondCalculator(object):
         """
         D = self.calc_macaulay_duration(bond, yld)
 
-        # TODO: implement details here - Weifeng
+        # TODO: implement details here - Ching Kung
         # end TODO:
         return (result)
 
@@ -131,7 +131,7 @@ class BondCalculator(object):
             px = calculator.calc_clean_price(bond, yld)
             return (px - bond_price)
 
-        # TODO: implement details here - Ching Kung
+        # TODO: implement details here - Weifeng
         # yld, n_iteractions = bisection( ....)
         # end TODO:
         return (yld)
@@ -139,7 +139,7 @@ class BondCalculator(object):
     def calc_convexity(self, bond, yld):
         # calculate convexity of a bond at a certain yield yld
 
-        # TODO: implement details here - Ching Kung
+        # TODO: implement details here - Weifeng
         # result = sum(wavg) / sum(PVs))
         return (result)
 
