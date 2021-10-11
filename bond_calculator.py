@@ -47,9 +47,9 @@ def get_actualactual_daycount_frac(start, end):
 
 
 class BondCalculator(object):
-    '''
+    """
     Bond Calculator class for pricing a bond
-    '''
+    """
 
     def __init__(self, pricing_date):
         self.pricing_date = pricing_date
@@ -64,10 +64,10 @@ class BondCalculator(object):
         return (df)
 
     def calc_clean_price(self, bond, yld):
-        '''
+        """
         Calculate bond price as of the pricing_date for a given yield
         bond price should be expressed in percentage eg 100 for a par bond
-        '''
+        """
         result = None
 
         one_period_factor = self.calc_one_period_discount_factor(bond, yld)
@@ -78,16 +78,16 @@ class BondCalculator(object):
         return (result)
 
     def calc_accrual_interest(self, bond, settle_date):
-        '''
+        """
         calculate the accrual interest on given a settle_date
         by calculating the previous payment date first and use the date count
         from previous payment date to the settle_date
-        '''
+        """
         prev_pay_date = bond.get_previous_payment_date(settle_date)
         end_date = settle_date
 
         # TODO: - Weifeng
-        '''
+        """
         if (bond.day_count == DayCount.DAYCOUNT_30360):
             frac = get_30360_daycount_frac(prev_pay_date, settle_date)
         elif (bond.day_count == DayCount.DAYCOUNT_ACTUAL_360):
@@ -96,15 +96,15 @@ class BondCalculator(object):
 
         result = frac * bond.coupon * bond.principal/100
 
-        '''
+        """
 
         # end TODO
         return (result)
 
     def calc_macaulay_duration(self, bond, yld):
-        '''
+        """
         time to cashflow weighted by PV
-        '''
+        """
         # TODO: implement details here - Weifeng
         # result =( sum(wavg) / sum(PVs))
 
@@ -112,9 +112,9 @@ class BondCalculator(object):
         return (result)
 
     def calc_modified_duration(self, bond, yld):
-        '''
+        """
         calculate modified duration at a certain yield yld
-        '''
+        """
         D = self.calc_macaulay_duration(bond, yld)
 
         # TODO: implement details here - Weifeng
@@ -122,9 +122,9 @@ class BondCalculator(object):
         return (result)
 
     def calc_yield(self, bond, bond_price):
-        '''
+        """
         Calculate the yield to maturity on given a bond price using bisection method
-        '''
+        """
 
         def match_price(yld):
             calculator = BondCalculator(self.pricing_date)
