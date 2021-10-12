@@ -58,27 +58,6 @@ class BondCalculator(object):
 
     def calc_one_period_discount_factor(self, bond, yld):
         # TODO by Jianhui
-        df = None
-        payment_frequency = bond.payment_freq
-        if payment_frequency == PaymentFrequency.ANNUAL:
-            df = 1 / (1 + yld)
-        elif payment_frequency == PaymentFrequency.SEMIANNUAL:
-            df = 1 / (1 + yld / 2)
-        elif payment_frequency == PaymentFrequency.QUARTERLY:
-            df = 1 / (1 + yld / 4)
-        elif payment_frequency == PaymentFrequency.MONTHLY:
-            df = 1 / (1 + yld / 12)
-        else:
-            raise Exception("Unsupported Payment Frequency")
-
-        return (df)
-
-    def calc_clean_price(self, bond, yld):
-        """
-        Calculate bond price as of the pricing_date for a given yield
-        bond price should be expressed in percentage eg 100 for a par bond
-        """
-        # TODO by Jianhui
         payment_frequency = bond.payment_freq
         if payment_frequency == PaymentFrequency.ANNUAL:
             payments_per_year = 1
@@ -91,7 +70,15 @@ class BondCalculator(object):
         else:
             raise Exception("Unsupported Payment Frequency")
 
-        total_payment_periods = bond.term * payments_per_year
+        return 1 / (1 + yld / payments_per_year)
+
+    def calc_clean_price(self, bond, yld):
+        """
+        Calculate bond price as of the pricing_date for a given yield
+        bond price should be expressed in percentage eg 100 for a par bond
+        """
+        # TODO by Jianhui
+        total_payment_periods = len(bond.payment_times_in_year)
         annual_coupon_payment = bond.principal * bond.coupon
         one_period_factor = self.calc_one_period_discount_factor(bond, yld)
 
