@@ -1,15 +1,10 @@
 """
-
 @project       : Queens College CSCI 365/765 Computational Finance
 @Instructor    : Dr. Alex Pang
-
 @Group Name    :
 @Student Name  : first last
-
 @Date          : Fall 2021
-
 A Bond Calculator Class
-
 """
 
 import math
@@ -116,9 +111,7 @@ class BondCalculator(object):
         elif (bond.day_count == DayCount.DAYCOUNT_ACTUAL_360):
             frac = get_actual360_daycount_frac(prev_pay_date, settle_date)
         ...
-
         result = frac * bond.coupon * bond.principal/100
-
         """
 
         # end TODO
@@ -151,21 +144,38 @@ class BondCalculator(object):
 
         def match_price(yld):
             calculator = BondCalculator(self.pricing_date)
-            px = calculator.calc_clean_price(bond, yld)
-            return (px - bond_price)
+            # px = calculator.calc_clean_price(bond, yld)
+            # return (px - bond_price)
+
+            one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+            DF = [math.pow(one_period_factor, i+1) for i in range(len(bond.coupon_payment))]
+            CF = [i for i in bond.coupon_payment]
+            CF[-1] += bond.principal
+
+            PVs = [CF[i] * DF[i] for i in range(len(bond.coupon_payment))] 
+            return(sum(PVs) - bond_price)
 
         # TODO: implement details here - Weifeng
         # yld, n_iteractions = bisection( ....)
         # end TODO:
+
+        yld, n_iteractions =bisection(match_price, 0, 1, eps=1.0e-6)
         return (yld)
 
     def calc_convexity(self, bond, yld):
         # calculate convexity of a bond at a certain yield yld
-
         # TODO: implement details here - Weifeng
         # result = sum(wavg) / sum(PVs))
-        return (result)
-
+       
+        bond_price = self.calc_clean_price(bond, yld)        
+        CF = [c for c in bond.coupon_payment]
+        CF[-1] += bond.principal
+        convexity = [CF[i] *bond.payment_times_in_year[i]**2*math.exp(-yld*bond.payment_times_in_year[i]) for i in range(len(bond.coupon_payment))]
+        
+         #return (result)
+        return(sum(convexity) / bond_price)
+        
+    
 
 ##########################  some test cases ###################
 
@@ -216,12 +226,25 @@ def _example4():
 
     assert (abs(yld - 0.04168) < 0.01)
 
+def _example5():
+    # unit tests
+    pricing_date = date(2021,1,1)
+    issue_date = date(2021,1,1)
+    engine = BondCalculator(pricing_date)
+
+    bond = Bond(issue_date, term = 2, day_count =DayCount.DAYCOUNT_30360,
+             payment_freq = PaymentFrequency.SEMIANNUAL,coupon = 0.08,principal=100)
+
+    print("bond\'s convexity is: ",engine.calc_convexity(bond, bond.coupon))
+
+    assert ("error")
 
 def _test():
     # basic test cases
     _example2()
     _example3()
-    # _example4()
+    _example4()
+    _example5()
 
 
 if __name__ == "__main__":
