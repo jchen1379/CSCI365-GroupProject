@@ -135,15 +135,24 @@ class BondCalculator(object):
         """
         Calculate the yield to maturity on given a bond price using bisection method
         """
-
         def match_price(yld):
             calculator = BondCalculator(self.pricing_date)
-            px = calculator.calc_clean_price(bond, yld)
-            return (px - bond_price)
+            # px = calculator.calc_clean_price(bond, yld)
+            # return (px - bond_price)
+
+            one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+            DF = [math.pow(one_period_factor, i+1) for i in range(len(bond.coupon_payment))]
+            CF = [i for i in bond.coupon_payment]
+            CF[-1] += bond.principal
+
+            PVs = [CF[i] * DF[i] for i in range(len(bond.coupon_payment))] 
+            return(sum(PVs) - bond_price)
 
         # TODO: implement details here - Weifeng
         # yld, n_iteractions = bisection( ....)
         # end TODO:
+
+        yld, n_iteractions =bisection(match_price, 0, 1, eps=1.0e-6)
         return (yld)
 
     def calc_convexity(self, bond, yld):
@@ -208,7 +217,7 @@ def _test():
     # basic test cases
     _example2()
     _example3()
-    # _example4()
+    _example4()
 
 
 if __name__ == "__main__":
