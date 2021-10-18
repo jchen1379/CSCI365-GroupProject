@@ -25,13 +25,13 @@ from datetime import date
 
 from bond import Bond, DayCount, PaymentFrequency
 
-
+# the exact day of each month
 def get_actual360_daycount_frac(start, end):
     day_in_year = 360
     day_count = (end - start).days
     return (day_count / day_in_year)
 
-
+# cal each month as 30 days
 def get_30360_daycount_frac(start, end):
     day_in_year = 360
     day_count = 360 * (end.year - start.year) + 30 * (end.month - start.month - 1) + \
@@ -96,16 +96,13 @@ class BondCalculator(object):
         end_date = settle_date
 
         # TODO: - Ching Kung
-        """
+
         if (bond.day_count == DayCount.DAYCOUNT_30360):
             frac = get_30360_daycount_frac(prev_pay_date, settle_date)
         elif (bond.day_count == DayCount.DAYCOUNT_ACTUAL_360):
             frac = get_actual360_daycount_frac(prev_pay_date, settle_date)
-        ...
 
-        result = frac * bond.coupon * bond.principal/100
-
-        """
+        result = frac * (bond.coupon / bond.payment_freq) * bond.principal
 
         # end TODO
         return (result)
@@ -115,7 +112,14 @@ class BondCalculator(object):
         time to cashflow weighted by PV
         """
         # TODO: implement details here - Ching Kung
+        # wavg weighted average term to maturity
+        wavg = ((1 + yld) / (bond.payment_freq * yld) - ((1+ yld + bond.term * (bond.coupon - yld))))
+
+        # PVs = Current Bond Price
+        PVs = ((bond.payment_freq * bond.coupon * ((1 + yld)**bond.term - 1)) + bond.payment_freq * yld)
+
         # result =( sum(wavg) / sum(PVs))
+        result = wavg / PVs
 
         # end TODO
         return (result)
@@ -127,6 +131,8 @@ class BondCalculator(object):
         D = self.calc_macaulay_duration(bond, yld)
 
         # TODO: implement details here - Ching Kung
+        result = D / (1 + yld)
+
         # end TODO:
         return (result)
 
@@ -206,7 +212,6 @@ def _test():
     _example2()
     _example3()
     _example4()
-
 
 if __name__ == "__main__":
     _test()
