@@ -145,8 +145,18 @@ class BondCalculator(object):
         # calculate convexity of a bond at a certain yield yld
 
         # TODO: implement details here - Weifeng
-        # result = sum(wavg) / sum(PVs))
-        return (result)
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        discount_factors = [math.pow(one_period_factor, i + 1) for i in range(len(bond.coupon_payment))]
+        cash_flows = bond.coupon_payment.copy()
+        cash_flows[-1] += bond.principal
+        present_values = [cash_flows[i] * discount_factors[i] for i in range(len(bond.coupon_payment))]
+
+        payment_times = bond.payment_times_in_year
+
+        convexities = [payment_times[i] * present_values[i] * (payment_times[i] + payment_times[0]) * one_period_factor ** 2
+                       for i in range(len(bond.payment_times_in_year))]
+
+        return sum(convexities) / sum(present_values)
 
 
 ##########################  some test cases ###################
