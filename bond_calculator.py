@@ -95,40 +95,38 @@ class BondCalculator(object):
         prev_pay_date = bond.get_previous_payment_date(settle_date)
         end_date = settle_date
 
-        # TODO: - Ching Kung
-        """
-        if (bond.day_count == DayCount.DAYCOUNT_30360):
-            frac = get_30360_daycount_frac(prev_pay_date, settle_date)
-        elif (bond.day_count == DayCount.DAYCOUNT_ACTUAL_360):
-            frac = get_actual360_daycount_frac(prev_pay_date, settle_date)
-        ...
+        if bond.day_count == DayCount.DAYCOUNT_30360:
+            frac = get_30360_daycount_frac(prev_pay_date, end_date)
+        elif bond.day_count == DayCount.DAYCOUNT_ACTUAL_360:
+            frac = get_actual360_daycount_frac(prev_pay_date, end_date)
+        elif bond.day_count == DayCount.DAYCOUNT_ACTUAL_ACTUAL:
+            frac = get_actualactual_daycount_frac(prev_pay_date, end_date)
+        else:
+            raise Exception("Unsupported Day Count")
 
-        result = frac * bond.coupon * bond.principal/100
-
-        """
-
-        # end TODO
-        return (result)
+        return frac * bond.coupon * bond.principal / 100
 
     def calc_macaulay_duration(self, bond, yld):
         """
         time to cashflow weighted by PV
         """
-        # TODO: implement details here - Ching Kung
-        # result =( sum(wavg) / sum(PVs))
+        present_value = self.calc_clean_price(bond, yld)
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
 
-        # end TODO
-        return (result)
+        cash_flows = bond.coupon_payment.copy()
+        cash_flows[-1] += bond.principal
+        discount_factors = [math.pow(one_period_factor, i) for i in range(1, len(cash_flows) + 1)]
+        weighted_averages = [bond.payment_times_in_year[i] * cash_flows[i] * discount_factors[i]
+                             for i in range(len(cash_flows))]
+        return sum(weighted_averages) / present_value
 
     def calc_modified_duration(self, bond, yld):
         """
         calculate modified duration at a certain yield yld
         """
-        D = self.calc_macaulay_duration(bond, yld)
-
-        # TODO: implement details here - Ching Kung
-        # end TODO:
-        return (result)
+        macaulay_duration = self.calc_macaulay_duration(bond, yld)
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        return - macaulay_duration * one_period_factor
 
     def calc_yield(self, bond, bond_price):
         """
@@ -147,8 +145,18 @@ class BondCalculator(object):
         # calculate convexity of a bond at a certain yield yld
 
         # TODO: implement details here - Weifeng
-        # result = sum(wavg) / sum(PVs))
-        return (result)
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        discount_factors = [math.pow(one_period_factor, i + 1) for i in range(len(bond.coupon_payment))]
+        cash_flows = bond.coupon_payment.copy()
+        cash_flows[-1] += bond.principal
+        present_values = [cash_flows[i] * discount_factors[i] for i in range(len(bond.coupon_payment))]
+
+        payment_times = bond.payment_times_in_year
+
+        convexities = [payment_times[i] * present_values[i] * (payment_times[i] + payment_times[0]) * one_period_factor ** 2
+                       for i in range(len(bond.payment_times_in_year))]
+
+        return sum(convexities) / sum(present_values)
 
 
 ##########################  some test cases ###################
