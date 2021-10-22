@@ -42,10 +42,19 @@ def get_30360_daycount_frac(start, end):
 def get_actualactual_daycount_frac(start, end):
     # TODO by Jianhui
     day_in_year = 365
-    if calendar.isleap(start.year):
-        day_in_year += 1
-    day_count = (end - start).days
-    return (day_count / day_in_year)
+    if start.year == end.year:
+        if calendar.isleap(start.year):
+            day_in_year += 1
+        result = (end - start).days / day_in_year
+    else:
+        if calendar.isleap(start.year):
+            result = (date(start.year, 12, 31) - start).days / 366 + (end - date(end.year, 1, 1)).days / 365
+        elif calendar.isleap(end.year):
+            result = (date(start.year, 12, 31) - start).days / 365 + (end - date(end.year, 1, 1)).days / 366
+        else:
+            result = (end - start).days / day_in_year
+
+    return result
 
 
 class BondCalculator(object):
