@@ -79,7 +79,7 @@ def _test():
     print("Beta ", beta)
     print("WACC ", wacc)
     print("Total debt ", stock.get_total_debt())
-    print("cash ", stock.get_cash_and_short_term_investments())
+    print("cash ", stock.get_cash_and_cash_equivalent())
 
     # look up EPS next 5Y from Finviz
     eps5y = 0.1543
