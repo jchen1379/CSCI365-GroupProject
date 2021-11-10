@@ -40,9 +40,8 @@ class Stock(object):
         Get daily historical OHLCV pricing dataframe
         """
         # TODO
-        # data = self.yfinancial.get_historical...
-        # create a OHLCV data frame
-        # self.ohlcv_df =
+        data = self.yfinancial.get_historical_price_data(str(start_date), str(end_date), 'daily')
+        self.ohlcv_df = pd.DataFrame(data[self.symbol]['prices']).set_index('formatted_date')
         # end TODO
 
     def calc_returns(self):
@@ -57,18 +56,35 @@ class Stock(object):
     def get_total_debt(self):
         """
         return Total debt of the company
+
+        Total Debt = Long Term Debt + Current (short term) Debt
+        Current Liabilities = Account Payables + Current Deferred Liabilities + Current Debt + Other Current Liabilities
+        Current Debt = Current Liabilities - Account Payables - Current Deferred Liabilities - Other Current Liabilities
         """
         result = None
         # TODO
+        long_term_debt = self.yfinancial.get_long_term_debt()
+
+        total_current_liabilities = self.yfinancial.get_total_current_liabilities()
+        account_payable = self.yfinancial.get_account_payable()
+        other_current_liabilities = self.yfinancial.get_other_current_liabilities()
+        short_term_debt = total_current_liabilities - account_payable - other_current_liabilities
+
+        result = long_term_debt + short_term_debt
         # end TODO
         return (result)
 
     def get_free_cashflow(self):
         """
         return Free Cashflow of the company
+
+        Free Cash Flow = Operating Cash Flow + Capital Expenditure
         """
         result = None
         # TODO
+        opertating_cash_flow = self.yfinancial.get_operating_cashflow()
+        capital_expenditure = self.yfinancial.get_capital_expenditures()
+        result = opertating_cash_flow + capital_expenditure
         # end TODO
         return (result)
 
@@ -78,6 +94,7 @@ class Stock(object):
         """
         result = None
         # TODO
+        result = self.yfinancial.get_cash()
         # end TODO
         return (result)
 
@@ -87,6 +104,7 @@ class Stock(object):
         """
         result = None
         # TODO
+        result = self.yfinancial.get_num_shares_outstanding()
         # end TODO
         return (result)
 
@@ -96,7 +114,7 @@ class Stock(object):
         """
         result = None
         # TODO
-        # result = self.yfinancial.get_beta()
+        result = self.yfinancial.get_beta()
         # end TODO
         return (result)
 
@@ -106,6 +124,22 @@ class Stock(object):
         """
         result = None
         # TODO:
+        if beta < 0.8:
+            result = 0.05
+        elif beta < 1.0:
+            result = 0.06
+        elif beta < 1.1:
+            result = 0.065
+        elif beta < 1.2:
+            result = 0.07
+        elif beta < 1.3:
+            result = 0.075
+        elif beta < 1.5:
+            result = 0.08
+        elif beta < 1.6:
+            result = 0.085
+        else:
+            result = 0.09
         # end TODO
         return (result)
 
