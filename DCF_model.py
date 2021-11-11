@@ -61,6 +61,31 @@ class DiscountedCashFlowModel(object):
         """
         
         #TODO
+
+        WACC = self.stock.lookup_wacc_by_beta(self.stock.get_beta())
+        DF = 1 / (1 + WACC)
+        DCF = 0
+        
+        FCC = self.stock.get_free_cashflow()
+        STR = self.short_term_growth_rate
+        MTR = self.medium_term_growth_rate
+        LTR = self.long_term_growth_rate
+
+  
+        for i in range(1, 6):
+            DCF += FCC * ((1 + STR) ** i) * (DF ** i)
+        CF5 = FCC * ((1 + STR) ** 5)
+
+        for i in range(1, 6):
+            DCF += CF5 * ((1 + MTR) ** i) * (DF ** (i + 5))
+        CF10 = CF5 * ((1 + MTR) ** 5)
+
+        for i in range(1, 11):
+            DCF += CF10 * ((1 + LTR) ** i) * (DF ** (i + 10))
+            
+        PV = self.stock.get_cash_and_cash_equivalent() + self.stock.yfinancial.get_short_term_investments() - self.stock.get_total_debt() + DCF
+        result = PV / self.stock.get_num_shares_outstanding()
+        
         #end TODO
         return(result)
 
