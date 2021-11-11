@@ -39,6 +39,8 @@ class SimpleMovingAverages(object):
         which can be  open, high, low or close
         """
         result = None
+        result = self.ohlcv_df[price_source].rolling(period,min_periods=1).mean()
+
         #TODO
         #end TODO
         return(result)
@@ -69,6 +71,8 @@ class ExponentialMovingAverages(object):
         for a given period, calc the SMA as a pandas series
         """
         result = None
+        result = self.ohlcv_df['close'].ewm(span=period,adjust=False).mean()
+        
         #TODO: implement details here
         #end TODO
         return(result)
@@ -100,6 +104,25 @@ class RSI(object):
         """
         #TODO: implement details here
         # self.rsi = ...
+        
+        diff = self.ohlcv_df['close'].diff()
+        
+        gain = diff.copy()
+        gain[diff<=0]=0.0
+        
+        loss = abs(diff.copy())
+        loss[diff>0]=0.0
+        
+        avg_gain = gain.ewm(com=13,adjust=False, min_periods=14).mean()
+        avg_loss = loss.ewm(com=13,adjust=False, min_periods=14).mean()
+        
+        try:
+            rs = abs(avg_gain/avg_loss)
+            self.rsi= 100-100/(1+rs)
+        except ZeroDivisionError:
+            print ("Can not divide by zero")
+
+        return(self.rsi)
         #end TODO
 
 
@@ -117,7 +140,13 @@ class VWAP(object):
         calculate VWAP
         """
         #TODO: implement details here
+
+        price = (self.ohlcv_df['high'] + self.ohlcv_df['low'] + self.ohlcv_df['close']) / 3
+        self.vwap = ((self.ohlcv_df['volume'] * price).cumsum()) / self.ohlcv_df['volume'].cumsum()
+
+        return(self.vwap)
         #end TODO
+
 
 
 def _test():
