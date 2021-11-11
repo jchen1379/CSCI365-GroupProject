@@ -42,10 +42,19 @@ def get_30360_daycount_frac(start, end):
 def get_actualactual_daycount_frac(start, end):
     # TODO by Jianhui
     day_in_year = 365
-    if calendar.isleap(start.year):
-        day_in_year += 1
-    day_count = (end - start).days
-    return (day_count / day_in_year)
+    if start.year == end.year:
+        if calendar.isleap(start.year):
+            day_in_year += 1
+        result = (end - start).days / day_in_year
+    else:
+        if calendar.isleap(start.year):
+            result = (date(start.year, 12, 31) - start).days / 366 + (end - date(end.year, 1, 1)).days / 365
+        elif calendar.isleap(end.year):
+            result = (date(start.year, 12, 31) - start).days / 365 + (end - date(end.year, 1, 1)).days / 366
+        else:
+            result = (end - start).days / day_in_year
+
+    return result
 
 
 class BondCalculator(object):
@@ -78,14 +87,13 @@ class BondCalculator(object):
         bond price should be expressed in percentage eg 100 for a par bond
         """
         # TODO by Jianhui
-        total_payment_periods = len(bond.payment_times_in_year)
-        annual_coupon_payment = bond.principal * bond.coupon
         one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        cash_flow = bond.coupon_payment.copy()
+        cash_flow[-1] += bond.principal
 
-        result = annual_coupon_payment / yld * (1 - math.pow(one_period_factor, total_payment_periods)) + \
-                 bond.principal * math.pow(one_period_factor, total_payment_periods)
+        present_values = [cash_flow[i] * math.pow(one_period_factor, i + 1) for i in range(len(bond.coupon_payment))]
 
-        return (result)
+        return sum(present_values)
 
     def calc_accrual_interest(self, bond, settle_date):
         """
@@ -96,40 +104,38 @@ class BondCalculator(object):
         prev_pay_date = bond.get_previous_payment_date(settle_date)
         end_date = settle_date
 
-        # TODO: - Ching Kung
-        """
-        if (bond.day_count == DayCount.DAYCOUNT_30360):
-            frac = get_30360_daycount_frac(prev_pay_date, settle_date)
-        elif (bond.day_count == DayCount.DAYCOUNT_ACTUAL_360):
-            frac = get_actual360_daycount_frac(prev_pay_date, settle_date)
-        ...
+        if bond.day_count == DayCount.DAYCOUNT_30360:
+            frac = get_30360_daycount_frac(prev_pay_date, end_date)
+        elif bond.day_count == DayCount.DAYCOUNT_ACTUAL_360:
+            frac = get_actual360_daycount_frac(prev_pay_date, end_date)
+        elif bond.day_count == DayCount.DAYCOUNT_ACTUAL_ACTUAL:
+            frac = get_actualactual_daycount_frac(prev_pay_date, end_date)
+        else:
+            raise Exception("Unsupported Day Count")
 
-        result = frac * bond.coupon * bond.principal/100
-
-        """
-
-        # end TODO
-        return (result)
+        return frac * bond.coupon * bond.principal / 100
 
     def calc_macaulay_duration(self, bond, yld):
         """
         time to cashflow weighted by PV
         """
-        # TODO: implement details here - Ching Kung
-        # result =( sum(wavg) / sum(PVs))
+        present_value = self.calc_clean_price(bond, yld)
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
 
-        # end TODO
-        return (result)
+        cash_flows = bond.coupon_payment.copy()
+        cash_flows[-1] += bond.principal
+        discount_factors = [math.pow(one_period_factor, i) for i in range(1, len(cash_flows) + 1)]
+        weighted_averages = [bond.payment_times_in_year[i] * cash_flows[i] * discount_factors[i]
+                             for i in range(len(cash_flows))]
+        return sum(weighted_averages) / present_value
 
     def calc_modified_duration(self, bond, yld):
         """
         calculate modified duration at a certain yield yld
         """
-        D = self.calc_macaulay_duration(bond, yld)
-
-        # TODO: implement details here - Ching Kung
-        # end TODO:
-        return (result)
+        macaulay_duration = self.calc_macaulay_duration(bond, yld)
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        return - macaulay_duration * one_period_factor
 
     def calc_yield(self, bond, bond_price):
         """
@@ -137,30 +143,29 @@ class BondCalculator(object):
         """
         def match_price(yld):
             calculator = BondCalculator(self.pricing_date)
-            # px = calculator.calc_clean_price(bond, yld)
-            # return (px - bond_price)
-
-            one_period_factor = self.calc_one_period_discount_factor(bond, yld)
-            DF = [math.pow(one_period_factor, i+1) for i in range(len(bond.coupon_payment))]
-            CF = [i for i in bond.coupon_payment]
-            CF[-1] += bond.principal
-
-            PVs = [CF[i] * DF[i] for i in range(len(bond.coupon_payment))] 
-            return(sum(PVs) - bond_price)
+            px = calculator.calc_clean_price(bond, yld)
+            return (px - bond_price)
 
         # TODO: implement details here - Weifeng
-        # yld, n_iteractions = bisection( ....)
-        # end TODO:
-
-        yld, n_iteractions =bisection(match_price, 0, 1, eps=1.0e-6)
+        yld, n_iteractions = bisection(match_price, 0, 1, eps=1.0e-6)
         return (yld)
 
     def calc_convexity(self, bond, yld):
         # calculate convexity of a bond at a certain yield yld
 
         # TODO: implement details here - Weifeng
-        # result = sum(wavg) / sum(PVs))
-        return (result)
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        discount_factors = [math.pow(one_period_factor, i + 1) for i in range(len(bond.coupon_payment))]
+        cash_flows = bond.coupon_payment.copy()
+        cash_flows[-1] += bond.principal
+        present_values = [cash_flows[i] * discount_factors[i] for i in range(len(bond.coupon_payment))]
+
+        payment_times = bond.payment_times_in_year
+
+        convexities = [payment_times[i] * present_values[i] * (payment_times[i] + payment_times[0]) * one_period_factor ** 2
+                       for i in range(len(bond.payment_times_in_year))]
+
+        return sum(convexities) / sum(present_values)
 
 
 ##########################  some test cases ###################
