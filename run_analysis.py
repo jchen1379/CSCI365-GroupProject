@@ -49,11 +49,11 @@ def run():
 
     # TODO
     results = []
-    for row in df.iterrows():
+    for index, row in df.iterrows():
         stock = Stock(row['Symbol'], 'annual')
         model = DiscountedCashFlowModel(stock, as_of_date)
 
-        short_term_growth_rate = float(row['EPS Next 5Y in percent'])
+        short_term_growth_rate = float(row['EPS Next 5Y in percent']) / 100
         medium_term_growth_rate = short_term_growth_rate / 2
         long_term_growth_rate = 0.04
 
