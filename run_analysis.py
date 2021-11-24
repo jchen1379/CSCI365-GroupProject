@@ -14,6 +14,8 @@ import datetime
 
 from stock import Stock
 from DCF_model import DiscountedCashFlowModel
+import yfinance as yf
+from TA import RSI, ExponentialMovingAverages, SimpleMovingAverages
 
 
 def run():
@@ -51,6 +53,7 @@ def run():
     results = []
     for index, row in df.iterrows():
         stock = Stock(row['Symbol'], 'annual')
+        stock.get_daily_hist_price('2021-11-1', as_of_date)
         model = DiscountedCashFlowModel(stock, as_of_date)
 
         short_term_growth_rate = float(row['EPS Next 5Y in percent']) / 100
@@ -60,9 +63,26 @@ def run():
         model.set_FCC_growth_rate(short_term_growth_rate, medium_term_growth_rate, long_term_growth_rate)
 
         fair_value = model.calc_fair_value()
+        current_price = stock.yfinancial.get_current_price()
+        sector = yf.Ticker(stock.symbol).info
+        market_cap = stock.yfinancial.get_market_cap()
+        beta = stock.get_beta()
+        total_assets = list(stock.yfinancial.get_financial_stmts('annual', 'balance').get('balanceSheetHistory')[stock.symbol][0].values())[0]['totalAssets']
+        total_debt = stock.get_total_debt()
+        free_cash_flow = stock.get_free_cashflow()
+        p_e_ratio = stock.yfinancial.get_pe_ratio()
+        price_to_sale_ratio = stock.yfinancial.get_price_to_sales()
+        rsi = RSI(stock.ohlcv_df).run()
 
-        # pull additional fields
-        # ...
+        ema = ExponentialMovingAverages(stock.ohlcv_df, [10])
+        ema.run()
+        ema10 = ema.get_series(10)
+
+        smas = SimpleMovingAverages(stock.ohlcv_df, [20, 50, 200])
+        smas.run()
+        smas20 = smas.get_series(20)
+        smas50 = smas.get_series(50)
+        smas200 = smas.get_series(200)
 
     # save the output into a StockUniverseOutput.csv file
 
