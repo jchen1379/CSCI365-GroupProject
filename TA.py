@@ -113,8 +113,8 @@ class RSI(object):
         loss = abs(diff.copy())
         loss[diff>0]=0.0
         
-        avg_gain = gain.ewm(com=13,adjust=False, min_periods=14).mean()
-        avg_loss = loss.ewm(com=13,adjust=False, min_periods=14).mean()
+        avg_gain = gain.ewm(com=13, adjust=False, min_periods=self.period).mean()
+        avg_loss = loss.ewm(com=13, adjust=False, min_periods=self.period).mean()
         
         try:
             rs = abs(avg_gain/avg_loss)
