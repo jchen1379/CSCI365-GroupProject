@@ -82,8 +82,13 @@ class DiscountedCashFlowModel(object):
 
         for i in range(1, 11):
             DCF += CF10 * ((1 + LTR) ** i) * (DF ** (i + 10))
-            
-        PV = self.stock.get_cash_and_cash_equivalent() + self.stock.yfinancial.get_short_term_investments() - self.stock.get_total_debt() + DCF
+
+        try:
+            short_term_investments = self.stock.yfinancial.get_short_term_investments()
+        except KeyError:
+            short_term_investments = 0
+
+        PV = self.stock.get_cash_and_cash_equivalent() + short_term_investments - self.stock.get_total_debt() + DCF
         result = PV / self.stock.get_num_shares_outstanding()
         
         #end TODO
