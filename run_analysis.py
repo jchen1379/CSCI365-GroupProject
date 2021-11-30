@@ -53,6 +53,7 @@ def run():
     results = []
     for index, row in df.iterrows():
         stock = Stock(row['Symbol'], 'annual')
+        print('Start Working on {}'.format(stock.symbol))
         stock.get_daily_hist_price('2021-11-1', as_of_date)
         model = DiscountedCashFlowModel(stock, as_of_date)
 
@@ -90,6 +91,8 @@ def run():
         results.append(
             [stock.symbol, eps, fair_value, current_price, sector, market_cap, beta, total_assets, total_debt,
              free_cash_flow, p_e_ratio, price_to_sale_ratio, rsi, ema10, smas20, smas50, smas200])
+
+        print('Finish Working on {}'.format(stock.symbol))
 
     # save the output into a StockUniverseOutput.csv file
     header = ['Symbol', 'EPS Next 5Y in percent', 'DCF value', 'Current Price', 'Sector', 'Market Cap', 'Beta',
