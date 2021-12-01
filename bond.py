@@ -3,8 +3,10 @@
 @project       : Queens College CSCI 365/765 Computational Finance
 @Instructor    : Dr. Alex Pang
 
-@Group Name    :
-@Student Name  :
+@Group Name    : Group 7
+@Student Name  : Weifeng Zhao
+                 Ching Kung Lin
+                 Jianhui Chen
 
 @Date          : Fall 2021
 
