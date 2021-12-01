@@ -54,43 +54,48 @@ def run():
     for index, row in df.iterrows():
         stock = Stock(row['Symbol'], 'annual')
         print('Start Working on {}'.format(stock.symbol))
-        stock.get_daily_hist_price('2021-11-1', as_of_date)
-        model = DiscountedCashFlowModel(stock, as_of_date)
+        try:
+            stock.get_daily_hist_price('2021-11-1', as_of_date)
+            model = DiscountedCashFlowModel(stock, as_of_date)
 
-        short_term_growth_rate = float(row['EPS Next 5Y in percent']) / 100
-        medium_term_growth_rate = short_term_growth_rate / 2
-        long_term_growth_rate = 0.04
+            short_term_growth_rate = float(row['EPS Next 5Y in percent']) / 100
+            medium_term_growth_rate = short_term_growth_rate / 2
+            long_term_growth_rate = 0.04
 
-        model.set_FCC_growth_rate(short_term_growth_rate, medium_term_growth_rate, long_term_growth_rate)
+            model.set_FCC_growth_rate(short_term_growth_rate, medium_term_growth_rate, long_term_growth_rate)
 
-        eps = row['EPS Next 5Y in percent']
-        fair_value = model.calc_fair_value()
-        current_price = stock.yfinancial.get_current_price()
-        sector = yf.Ticker(stock.symbol).info['sector']
-        market_cap = stock.yfinancial.get_market_cap()
-        beta = stock.get_beta()
-        total_assets = list(
-            stock.yfinancial.get_financial_stmts('annual', 'balance').get('balanceSheetHistory')[stock.symbol][
-                0].values())[0]['totalAssets']
-        total_debt = stock.get_total_debt()
-        free_cash_flow = stock.get_free_cashflow()
-        p_e_ratio = stock.yfinancial.get_pe_ratio()
-        price_to_sale_ratio = stock.yfinancial.get_price_to_sales()
-        rsi = RSI(stock.ohlcv_df).run()
+            eps = row['EPS Next 5Y in percent']
+            fair_value = model.calc_fair_value()
+            current_price = stock.yfinancial.get_current_price()
+            sector = yf.Ticker(stock.symbol).info['sector']
+            market_cap = stock.yfinancial.get_market_cap()
+            beta = stock.get_beta()
+            total_assets = list(
+                stock.yfinancial.get_financial_stmts('annual', 'balance').get('balanceSheetHistory')[stock.symbol][
+                    0].values())[0]['totalAssets']
+            total_debt = stock.get_total_debt()
+            free_cash_flow = stock.get_free_cashflow()
+            p_e_ratio = stock.yfinancial.get_pe_ratio()
+            price_to_sale_ratio = stock.yfinancial.get_price_to_sales()
+            rsi = RSI(stock.ohlcv_df).run()[-1]
 
-        ema = ExponentialMovingAverages(stock.ohlcv_df, [10])
-        ema.run()
-        ema10 = ema.get_series(10)
+            ema = ExponentialMovingAverages(stock.ohlcv_df, [10])
+            ema.run()
+            ema10 = ema.get_series(10)[-1]
 
-        smas = SimpleMovingAverages(stock.ohlcv_df, [20, 50, 200])
-        smas.run()
-        smas20 = smas.get_series(20)
-        smas50 = smas.get_series(50)
-        smas200 = smas.get_series(200)
+            smas = SimpleMovingAverages(stock.ohlcv_df, [20, 50, 200])
+            smas.run()
+            smas20 = smas.get_series(20)[-1]
+            smas50 = smas.get_series(50)[-1]
+            smas200 = smas.get_series(200)[-1]
 
-        results.append(
-            [stock.symbol, eps, fair_value, current_price, sector, market_cap, beta, total_assets, total_debt,
-             free_cash_flow, p_e_ratio, price_to_sale_ratio, rsi, ema10, smas20, smas50, smas200])
+            results.append(
+                [stock.symbol, eps, fair_value, current_price, sector, market_cap, beta, total_assets, total_debt,
+                 free_cash_flow, p_e_ratio, price_to_sale_ratio, rsi, ema10, smas20, smas50, smas200])
+        except KeyError:
+            empty_result = ['' for i in range(16)]
+            empty_result.insert(0, stock.symbol)
+            results.append(empty_result)
 
         print('Finish Working on {}'.format(stock.symbol))
 
