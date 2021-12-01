@@ -63,11 +63,7 @@ class Stock(object):
         """
         result = None
         # TODO
-        try:
-            long_term_debt = self.yfinancial.get_long_term_debt()
-        except KeyError:
-            long_term_debt = 0
-
+        long_term_debt = self.yfinancial.get_long_term_debt()
         total_current_liabilities = self.yfinancial.get_total_current_liabilities()
         account_payable = self.yfinancial.get_account_payable()
         other_current_liabilities = self.yfinancial.get_other_current_liabilities()
@@ -86,11 +82,7 @@ class Stock(object):
         result = None
         # TODO
         opertating_cash_flow = self.yfinancial.get_operating_cashflow()
-
-        try:
-            capital_expenditure = self.yfinancial.get_capital_expenditures()
-        except KeyError:
-            capital_expenditure = 0
+        capital_expenditure = self.yfinancial.get_capital_expenditures()
 
         result = opertating_cash_flow + capital_expenditure
         # end TODO
