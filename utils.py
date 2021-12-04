@@ -3,7 +3,10 @@
 @Instructor    : Dr. Alex Pang
 @Date          : June 2021
 
-@Student Name  : first last
+@Group Name    : Group 7
+@Student Name  : Weifeng Zhao
+                 Ching Kung Lin
+                 Jianhui Chen
 
 https://github.com/JECSand/yahoofinancials
 
