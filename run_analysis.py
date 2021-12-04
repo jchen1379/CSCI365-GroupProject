@@ -95,7 +95,7 @@ def run():
             results.append(
                 [stock.symbol, eps, fair_value, current_price, sector, market_cap, beta, total_assets, total_debt,
                  free_cash_flow, p_e_ratio, price_to_sale_ratio, rsi, ema10, smas20, smas50, smas200])
-        except KeyError:
+        except Exception:
             empty_result = ['' for i in range(16)]
             empty_result.insert(0, stock.symbol)
             results.append(empty_result)
